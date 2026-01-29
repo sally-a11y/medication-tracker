@@ -169,28 +169,38 @@
             const givenBy = document.getElementById('givenBy').value;
             const notes = document.getElementById('notes').value;
 
-            const { data, error } = await supabase
-                .from('medications')
-                .insert([{
-                    medication_name: medication,
-                    dosage: dosage,
-                    given_at: givenAt,
-                    given_by: givenBy,
-                    notes: notes
-                }]);
+            console.log('Attempting to save:', { medication, dosage, givenAt, givenBy, notes });
 
-            if (error) {
-                console.error('Error saving medication:', error);
-                alert('Error saving medication. Please try again.');
-                return;
+            try {
+                const { data, error } = await supabase
+                    .from('medications')
+                    .insert([{
+                        medication_name: medication,
+                        dosage: dosage,
+                        given_at: givenAt,
+                        given_by: givenBy,
+                        notes: notes
+                    }])
+                    .select();
+
+                if (error) {
+                    console.error('Supabase error:', error);
+                    alert('Error saving: ' + error.message);
+                    return;
+                }
+
+                console.log('Saved successfully:', data);
+
+                // Reset form
+                document.getElementById('medicationForm').reset();
+                setDefaultTime();
+                
+                // Reload history
+                loadMedications();
+            } catch (err) {
+                console.error('Unexpected error:', err);
+                alert('Unexpected error: ' + err.message);
             }
-
-            // Reset form
-            document.getElementById('medicationForm').reset();
-            setDefaultTime();
-            
-            // Reload history
-            loadMedications();
         });
 
         // Initialize
